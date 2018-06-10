@@ -1,0 +1,48 @@
+version: '2'
+services:
+
+  web:
+    image: nginx
+    ports:
+      - "8000:80"
+      - "443:443"
+    links:
+      - php
+      - mysql
+    volumes:
+      - ./sites:/etc/nginx/conf.d
+      - ./conf/nginx.conf:/etc/nginx/nginx.conf
+    volumes_from:
+      - code
+
+  php:
+    build: .
+    working_dir: /var/www
+    volumes_from:
+      - code
+  mysql:
+    image: mariadb
+    ports:
+      - "33061:3306"
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+
+  code:
+    image: busybox
+    volumes:
+      - ./www:/var/www
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    links:
+      - mysql
+    ports:
+      - 8001:80
+    environment:
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: admin
+      PMA_ARBITRARY: 1
